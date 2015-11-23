@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <Button
+        android:id="@+id/b"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="190dp"
+        android:layout_marginLeft="58dp"
+        android:text="Button" />
+
+    <Button
+        android:id="@+id/op"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/button1"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="85dp"
+        android:layout_marginRight="50dp"
+        android:text="Button" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/b"
+        android:layout_alignRight="@+id/b"
+        android:layout_marginBottom="98dp"
+        android:text="TextView" />
+
+</RelativeLayout>
