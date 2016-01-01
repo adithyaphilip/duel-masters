@@ -2,7 +2,6 @@ package com.darknessinc.duelmasters.layout;
 
 import android.app.Activity;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageView;
 
 import com.darknessinc.duelmasters.R;

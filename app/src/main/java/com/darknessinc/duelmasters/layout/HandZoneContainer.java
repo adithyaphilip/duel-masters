@@ -31,7 +31,7 @@ public class HandZoneContainer extends LinearLayoutZoneContainer {
 			cv.setOnClickListener(new CardClickListener(gc, getZone(), (Activity)mLl.getContext()));
 			cv.setAdjustViewBounds(true);
 			cv.setScaleType(ScaleType.CENTER_INSIDE);
-			LayoutParams lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			LayoutParams lp = new LayoutParams(reqWidth, LayoutParams.WRAP_CONTENT);
 			int dip = SizeManager.getDip(2, (cv.getContext()).getResources().getDisplayMetrics());
 			lp.setMargins(dip, dip, dip, dip);
 			mLl.addView(cv,lp);

@@ -119,8 +119,8 @@ public class GameActivity extends Activity {
 		mP2Grave = (ImageView)findViewById(R.id.p2_grave_iv);
 		//Finished retrieving all layouts
 
-        ZoneContainerCollection p1ZcCollection;
-        ZoneContainerCollection p2ZcCollection;
+        final ZoneContainerCollection p1ZcCollection;
+        final ZoneContainerCollection p2ZcCollection;
 
 		//Setting up players for later use by containers and gameplayers
 
@@ -171,6 +171,9 @@ public class GameActivity extends Activity {
 		    	mP2Mana.setMinimumHeight(mP2Deck.getHeight());
 		    	mP2Shield.setMinimumHeight(mP2Deck.getHeight());
 		    	mP2Battle.setMinimumHeight(mP2Deck.getHeight());
+
+                p1ZcCollection.initializeCardsExceptDeck();
+                p2ZcCollection.initializeCardsExceptDeck();
 		    }
 		});
 

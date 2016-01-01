@@ -23,6 +23,7 @@ public class GraveZoneContainer extends ZoneContainer{
 		mFaceView = (ImageView)r;
 		resetFace();
 	}
+
 	@Override
 	public void addCard(GameCard gc){
 		super.addCard(gc);

@@ -27,6 +27,7 @@ import java.util.ArrayList;
  * Prescribes an order for accessing and storing the various zones internally. Reduces code
  * duplicatio by using arrays.
  * ORDER: Mana, Hand, Shield, Battle, Grave, Deck
+ *
  * @author abrahamphilip
  */
 public class ZoneContainerCollection {
@@ -41,6 +42,8 @@ public class ZoneContainerCollection {
 
     private ZoneContainer[] mZoneContainers = new ZoneContainer[ZONE_COUNT];
 
+    private GameCardsLists mInitialGcl;
+
     public static class GameCardsLists implements Parcelable {
         private ArrayList<GameCard>[] mZoneCards;
 
@@ -50,7 +53,7 @@ public class ZoneContainerCollection {
 
         GameCardsLists(Parcel in) {
             int ctr = 0;
-            for(Object o: in.readArray(getClass().getClassLoader())) {
+            for (Object o : in.readArray(getClass().getClassLoader())) {
                 mZoneCards[ctr++] = (ArrayList<GameCard>) o;
             }
         }
@@ -78,14 +81,6 @@ public class ZoneContainerCollection {
         }
     }
 
-    public ZoneContainerCollection(GameCardsLists lists,
-                                   LinearLayout manaView, LinearLayout handView,
-                                   LinearLayout shieldView, LinearLayout battleView,
-                                   ImageView graveView, ImageView deckView) {
-        initialize(lists.mZoneCards,
-                manaView, handView, shieldView, battleView, graveView, deckView);
-    }
-
     /**
      * Only Deck is filled with supplied cards, for when game is started
      */
@@ -93,42 +88,49 @@ public class ZoneContainerCollection {
                                    LinearLayout manaView, LinearLayout handView,
                                    LinearLayout shieldView, LinearLayout battleView,
                                    ImageView graveView, ImageView deckView) {
-        ArrayList<GameCard>[] cards = new ArrayList[ZONE_COUNT];
-        for(int i = 0; i< cards.length; i++) cards[i] = new ArrayList<>();
-        cards[DECK_INDEX] = deckCards;
-        initialize(cards, manaView, handView, shieldView, battleView, graveView, deckView);
+        initialize(deckCards, manaView, handView, shieldView, battleView, graveView, deckView);
+    }
+
+    public ZoneContainerCollection(GameCardsLists gcl,
+                                   LinearLayout manaView, LinearLayout handView,
+                                   LinearLayout shieldView, LinearLayout battleView,
+                                   ImageView graveView, ImageView deckView) {
+        mInitialGcl = gcl;
+        initialize(gcl.mZoneCards[DECK_INDEX],
+                manaView, handView, shieldView, battleView, graveView, deckView);
     }
 
     public GameCardsLists getGameCardsLists() {
         ArrayList<GameCard>[] cards = new ArrayList[ZONE_COUNT];
-        for(int i = 0 ;i<mZoneContainers.length;i++) {
+        for (int i = 0; i < mZoneContainers.length; i++) {
             cards[i] = mZoneContainers[i].getCards();
         }
         return new GameCardsLists(cards);
     }
 
     /**
-     * initializes the containers with their views
+     * initializes the containers with their views and empty zones
      */
-    private void initialize(ArrayList<GameCard> cards[], LinearLayout manaView, LinearLayout handView,
-                           LinearLayout shieldView, LinearLayout battleView,
-                           ImageView graveView, ImageView deckView) {
+    private void initialize(ArrayList<GameCard> deckCards,
+                            LinearLayout manaView, LinearLayout handView,
+                            LinearLayout shieldView, LinearLayout battleView,
+                            ImageView graveView, ImageView deckView) {
         mZoneContainers[HAND_INDEX] = new HandZoneContainer(handView,
-                new HandZone(cards[HAND_INDEX]),deckView);
+                new HandZone(new ArrayList<GameCard>()), deckView);
         mZoneContainers[MANA_INDEX] = new LinearLayoutZoneContainer(manaView,
-                new ManaZone(cards[MANA_INDEX]),deckView);
+                new ManaZone(new ArrayList<GameCard>()), deckView);
         mZoneContainers[DECK_INDEX] = new DeckZoneContainer(deckView,
-                new DeckZone(cards[DECK_INDEX]));
+                new DeckZone(deckCards));
         mZoneContainers[GRAVE_INDEX] = new GraveZoneContainer(graveView,
-                new GraveZone(cards[GRAVE_INDEX]));
+                new GraveZone(new ArrayList<GameCard>()));
         mZoneContainers[SHIELD_INDEX] = new ShieldZoneContainer(shieldView,
-                new ShieldZone(cards[SHIELD_INDEX]),deckView);
+                new ShieldZone(new ArrayList<GameCard>()), deckView);
         mZoneContainers[BATTLE_INDEX] = new LinearLayoutZoneContainer(battleView,
-                new BattleZone(cards[BATTLE_INDEX]),deckView);
+                new BattleZone(new ArrayList<GameCard>()), deckView);
     }
 
     public ZoneContainer getZoneContainer(int zoneId) {
-        switch(zoneId){
+        switch (zoneId) {
             case Zone.ZONE_BATTLE:
                 return mZoneContainers[BATTLE_INDEX];
             case Zone.ZONE_DECK:
@@ -147,5 +149,23 @@ public class ZoneContainerCollection {
         }
     }
 
-
+    /**
+     * to be called only after deck size has been resolved to add cards to respective zones
+     * necessary since other zones use deck as a reference view
+     * Assumes zones return cards in the order in which they are to be added
+     */
+    public void initializeCardsExceptDeck() {
+        if (mInitialGcl == null) return;
+        for (int i = 0; i < mZoneContainers.length; i++) {
+            if (i != DECK_INDEX) {
+                Log.d("ZoneContainerCollection","CardList for zone at index " + i+": " + mInitialGcl.mZoneCards[i]);
+                for (GameCard gc : mInitialGcl.mZoneCards[i]) {
+                    Log.d("ZoneContainerCollection","Adding card " + gc.getGameId() + "at index " + i);
+                    mZoneContainers[i].addCard(gc);
+                }
+            }
+        }
+        mInitialGcl = null; // to prevent anything from happening if function is called again.
+        // This happens since it's called in onGlobalLayoutListener currently
+    }
 }

@@ -39,6 +39,7 @@ public class LinearLayoutZoneContainer extends ZoneContainer {
 	public void setWidth(int reqWidth){
 		mReqWidth=reqWidth;
 	}
+
 	@Override
 	public void addCard(GameCard gc){
 		super.addCard(gc);
@@ -57,7 +58,7 @@ public class LinearLayoutZoneContainer extends ZoneContainer {
 		cv.setAdjustViewBounds(true);
 		cv.setScaleType(ScaleType.CENTER_INSIDE);
 		LayoutParams lp = new LayoutParams(mReqWidth, LayoutParams.WRAP_CONTENT);
-		int dip = SizeManager.getDip(2,(cv.getContext()).getResources().getDisplayMetrics());
+		int dip = SizeManager.getDip(2, (cv.getContext()).getResources().getDisplayMetrics());
 		lp.setMargins(dip, dip, dip, dip);
 		mLl.addView(cv,lp);
 	}
