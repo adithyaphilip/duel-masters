@@ -7,16 +7,18 @@ import com.darknessinc.duelmasters.zone.Zone;
 
 /**
  * Only contains an ImageView
- * @author USER
  *
+ * @author USER
  */
-public abstract class ImageViewZoneContainer extends ZoneContainer{
-	private ImageView mFaceIv;
-	public ImageViewZoneContainer(View r, Zone z) {
-		super(r, z);
-		mFaceIv = (ImageView)r;
-	}
-	public ImageView getFaceImageView(){
-		return mFaceIv;
-	}
+public abstract class ImageViewZoneContainer extends ZoneContainer {
+    private ImageView mFaceIv;
+
+    public ImageViewZoneContainer(View r, Zone z) {
+        super(r, z);
+        mFaceIv = (ImageView) r;
+    }
+
+    public ImageView getFaceImageView() {
+        return mFaceIv;
+    }
 }

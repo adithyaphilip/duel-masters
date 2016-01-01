@@ -11,22 +11,22 @@ import com.darknessinc.duelmasters.R;
 
 public class PlayActivity extends Activity {
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_play);
-		Button decks=(Button)findViewById(R.id.decksbtn);
-		Button play=(Button)findViewById(R.id.playbtn);
-	}
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_play);
+        Button decks = (Button) findViewById(R.id.decksbtn);
+        Button play = (Button) findViewById(R.id.playbtn);
+    }
 
-	
 
-	public void decks(View v){
-		Intent i = new Intent(this,Decks.class);
-		startActivity(i);
-	}
-	public void play(View v){
-		Intent i = new Intent(this,DeckChooser.class);
-		startActivity(i);
-	}
+    public void decks(View v) {
+        Intent i = new Intent(this, Decks.class);
+        startActivity(i);
+    }
+
+    public void play(View v) {
+        Intent i = new Intent(this, DeckChooser.class);
+        startActivity(i);
+    }
 }

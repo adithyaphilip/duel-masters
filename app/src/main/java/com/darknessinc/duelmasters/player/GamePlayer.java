@@ -13,15 +13,16 @@ import com.darknessinc.duelmasters.zone.Zone;
 
 public class GamePlayer extends Player {
     // does not manage to be Parcelable
-	private ZoneContainerCollection mZoneContainerCollection;
-	public GamePlayer(Player p, ZoneContainerCollection zc) {
-		super(p.getId(), p.getName(), p.getGameCards());
-        this.mZoneContainerCollection = zc;
-	}
+    private ZoneContainerCollection mZoneContainerCollection;
 
-	public ZoneContainer getZoneContainer(int zoneId){
-		return mZoneContainerCollection.getZoneContainer(zoneId);
-	}
+    public GamePlayer(Player p, ZoneContainerCollection zc) {
+        super(p.getId(), p.getName(), p.getGameCards());
+        this.mZoneContainerCollection = zc;
+    }
+
+    public ZoneContainer getZoneContainer(int zoneId) {
+        return mZoneContainerCollection.getZoneContainer(zoneId);
+    }
 
     public GamePlayer(Parcel in) {
         super(in);

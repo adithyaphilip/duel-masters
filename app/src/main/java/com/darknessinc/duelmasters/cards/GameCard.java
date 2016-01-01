@@ -10,59 +10,72 @@ import com.darknessinc.duelmasters.views.GameCardView;
 
 
 public class GameCard implements Parcelable {
-	private int gameId;
-	private Card dbCard;
-	private int zoneId=-1;
-	private boolean tapped = false;
-	private boolean indicated = false;
-	
-	public GameCardView getGameCardView(Context c, int reqWidth, int reqHeight){
-		GameCardView cv = new GameCardView(c, this);
-		Bitmap bm = dbCard.getCardBitmap(reqWidth, reqHeight);
-		Log.d("GameCard","getGameCardView width: "+bm.getWidth()+"height: "+bm.getHeight());
-		cv.setImageBitmap(bm);
-		return cv;
-	}
-	public int getZoneId() {
-		return zoneId;
-	}
-	public void setZoneId(int zoneId) {
-		this.zoneId = zoneId;
-	}
-	public GameCard(int gameId, Card c, int zoneId){
-		this.gameId=gameId;
-		this.dbCard = c;
-		this.zoneId = zoneId;
-	}
-	public GameCard(int gameId, Card card){
-		this.gameId = gameId;
-		this.dbCard = card;
-		this.zoneId=-1;
-	}
-	public int getGameId() {
-		return gameId;
-	}
-	public void setGameId(int gameId) {
-		this.gameId = gameId;
-	}
-	public Card getDbCard() {
-		return dbCard;
-	}
-	public void setDbCard(Card dbCard) {
-		this.dbCard = dbCard;
-	}
-    public void indicate(){
-    	indicated=!indicated;    	
+    private int gameId;
+    private Card dbCard;
+    private int zoneId = -1;
+    private boolean tapped = false;
+    private boolean indicated = false;
+
+    public GameCardView getGameCardView(Context c, int reqWidth, int reqHeight) {
+        GameCardView cv = new GameCardView(c, this);
+        Bitmap bm = dbCard.getCardBitmap(reqWidth, reqHeight);
+        Log.d("GameCard", "getGameCardView width: " + bm.getWidth() + "height: " + bm.getHeight());
+        cv.setImageBitmap(bm);
+        return cv;
     }
-    public boolean isIndicated(){
-    	return indicated;
+
+    public int getZoneId() {
+        return zoneId;
     }
-    public void tap(){
-    	tapped=!tapped;
+
+    public void setZoneId(int zoneId) {
+        this.zoneId = zoneId;
     }
-    public boolean isTapped(){
-    	return tapped;
+
+    public GameCard(int gameId, Card c, int zoneId) {
+        this.gameId = gameId;
+        this.dbCard = c;
+        this.zoneId = zoneId;
     }
+
+    public GameCard(int gameId, Card card) {
+        this.gameId = gameId;
+        this.dbCard = card;
+        this.zoneId = -1;
+    }
+
+    public int getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(int gameId) {
+        this.gameId = gameId;
+    }
+
+    public Card getDbCard() {
+        return dbCard;
+    }
+
+    public void setDbCard(Card dbCard) {
+        this.dbCard = dbCard;
+    }
+
+    public void indicate() {
+        indicated = !indicated;
+    }
+
+    public boolean isIndicated() {
+        return indicated;
+    }
+
+    public void tap() {
+        tapped = !tapped;
+    }
+
+    public boolean isTapped() {
+        return tapped;
+    }
+
     protected GameCard(Parcel in) {
         gameId = in.readInt();
         dbCard = (Card) in.readValue(Card.class.getClassLoader());
@@ -96,8 +109,9 @@ public class GameCard implements Parcelable {
             return new GameCard[size];
         }
     };
+
     @Override
-    public String toString(){
-    	return dbCard.getName();
+    public String toString() {
+        return dbCard.getName();
     }
 }

@@ -6,40 +6,47 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.darknessinc.duelmasters.cards.GameCard;
+
 /**
- * 
  * @author USER
- * TODO remove setId and setName because we don't want them to be changed after initialisation
+ *         TODO remove setId and setName because we don't want them to be changed after initialisation
  */
 public class Player implements Parcelable {
-	private int id;
-	private String name;
-	private ArrayList<GameCard> mGameCards;//all of players cards
-	public Player(int id, String name, ArrayList<GameCard> mGameCards) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.mGameCards = mGameCards;
-	}
-	public int getId() {
-		return id;
-	}
-	public void setId(int id) {
-		this.id = id;
-	}
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
-	public ArrayList<GameCard> getGameCards() {
-		return mGameCards;
-	}
-	public void setGameCards(ArrayList<GameCard> mGameCards) {
-		this.mGameCards = mGameCards;
-	}
-	
+    private int id;
+    private String name;
+    private ArrayList<GameCard> mGameCards;//all of players cards
+
+    public Player(int id, String name, ArrayList<GameCard> mGameCards) {
+        super();
+        this.id = id;
+        this.name = name;
+        this.mGameCards = mGameCards;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public ArrayList<GameCard> getGameCards() {
+        return mGameCards;
+    }
+
+    public void setGameCards(ArrayList<GameCard> mGameCards) {
+        this.mGameCards = mGameCards;
+    }
+
 
     protected Player(Parcel in) {
         id = in.readInt();

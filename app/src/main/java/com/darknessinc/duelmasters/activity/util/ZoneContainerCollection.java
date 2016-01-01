@@ -158,9 +158,9 @@ public class ZoneContainerCollection {
         if (mInitialGcl == null) return;
         for (int i = 0; i < mZoneContainers.length; i++) {
             if (i != DECK_INDEX) {
-                Log.d("ZoneContainerCollection","CardList for zone at index " + i+": " + mInitialGcl.mZoneCards[i]);
+                Log.d("ZoneContainerCollection", "CardList for zone at index " + i + ": " + mInitialGcl.mZoneCards[i]);
                 for (GameCard gc : mInitialGcl.mZoneCards[i]) {
-                    Log.d("ZoneContainerCollection","Adding card " + gc.getGameId() + "at index " + i);
+                    Log.d("ZoneContainerCollection", "Adding card " + gc.getGameId() + "at index " + i);
                     mZoneContainers[i].addCard(gc);
                 }
             }
