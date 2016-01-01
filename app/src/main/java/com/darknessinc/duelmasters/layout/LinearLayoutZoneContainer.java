@@ -3,7 +3,6 @@ package com.darknessinc.duelmasters.layout;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
@@ -26,15 +25,15 @@ import com.darknessinc.duelmasters.zone.Zone;
  * @author USER
  *
  */
-public class LinearLayoutZoneContainer extends ZoneContainer{
+public class LinearLayoutZoneContainer extends ZoneContainer {
 	
 	LinearLayout mLl;
 	int mReqWidth;
 	int mReqHeight;
 	ImageView refView;
-	public LinearLayoutZoneContainer(View r, Zone z, ImageView t) {
+	public LinearLayoutZoneContainer(LinearLayout r, Zone z, ImageView t) {
 		super(r, z);	
-		mLl = (LinearLayout)r;
+		mLl = r;
 		refView = t;
 	}
 	public void setWidth(int reqWidth){
@@ -52,13 +51,13 @@ public class LinearLayoutZoneContainer extends ZoneContainer{
 	 * @param gc
 	 */
 	protected void addCardView(final GameCard gc, int reqWidth, int reqHeight){
-		Log.d("LLZoneContainer addCardView","width: "+reqWidth+" height: "+reqHeight);
-		GameCardView cv = gc.getGameCardView(mLl.getContext(),reqWidth, reqHeight);
+		Log.d("LLZoneContainer"," addCardView width: "+reqWidth+" height: "+reqHeight);
+		GameCardView cv = gc.getGameCardView(mLl.getContext(), reqWidth, reqHeight);
 		cv.setOnClickListener(new CardClickListener(gc, getZone(), (Activity)mLl.getContext()));
 		cv.setAdjustViewBounds(true);
 		cv.setScaleType(ScaleType.CENTER_INSIDE);
 		LayoutParams lp = new LayoutParams(mReqWidth, LayoutParams.WRAP_CONTENT);
-		int dip = SizeManager.getDip(2,((Activity)cv.getContext()).getResources().getDisplayMetrics());
+		int dip = SizeManager.getDip(2,(cv.getContext()).getResources().getDisplayMetrics());
 		lp.setMargins(dip, dip, dip, dip);
 		mLl.addView(cv,lp);
 	}
@@ -75,7 +74,7 @@ public class LinearLayoutZoneContainer extends ZoneContainer{
 			}
 		}
 		if(!removed){
-			Log.e("LinearLayoutZoneContainer","Unable to find "+gameId+" to remove!");
+			Log.e("LLZoneContainer","Unable to find "+gameId+" to remove!");
 		}
 		return gc;
 	}
@@ -91,7 +90,7 @@ public class LinearLayoutZoneContainer extends ZoneContainer{
 			}
 		}
 		if(!found){
-			Log.e("LinearLayoutZoneContainer","Unable to find "+gameId+" to indicate!");
+			Log.e("LLZoneContainer","Unable to find "+gameId+" to indicate!");
 		}
 		else{
 			GameCard gc = icv.getGameCard();
@@ -125,7 +124,7 @@ public class LinearLayoutZoneContainer extends ZoneContainer{
 			}
 		}
 		if(!found){
-			Log.e("LinearLayoutZoneContainer","getGameCardView: Unable to find "+gameCardId+" to get!");
+			Log.e("LLZoneContainer","getGameCardView: Unable to find "+gameCardId+" to get!");
 		}
 		return rCardView;
 	}

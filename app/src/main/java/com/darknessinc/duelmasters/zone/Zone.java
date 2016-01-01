@@ -17,6 +17,8 @@ import com.darknessinc.duelmasters.feed.InstructionDecoder;
  */
 public abstract class Zone {
 	//below constants are used by GameCard to specify which zone it's in
+	// TODO enum - not enum as of now because of conversion to string when passing b/w devices
+    // ^ attempt ordinal conversion
 	public final static int ZONE_BATTLE=1;
 	public final static int ZONE_HAND = 2;
 	public final static int ZONE_GRAVEYARD = 3;
@@ -47,9 +49,9 @@ public abstract class Zone {
 	public final static String ACTION_TAP = "Tap/Untap";
 	
 	
-	private HashMap<String,Integer> optionMap = new HashMap<String,Integer>();
+	private HashMap<String,Integer> optionMap = new HashMap<>();
 	
-	private ArrayList<GameCard> mCardList = new ArrayList<GameCard>();
+	private ArrayList<GameCard> mCardList = new ArrayList<>();
 	/**
 	 * Since addCard did more than just adding, and we should have known it all along, we should have made the constructor
 	 * accept the arrayList, then added each card to the Zone in a loop
@@ -74,9 +76,9 @@ public abstract class Zone {
 	 * @param gcs
 	 */
 	public Zone(ArrayList<GameCard> gcs){
-		mCardList = new ArrayList<GameCard>();
+		mCardList = new ArrayList<>();
 		if(gcs==null)
-			gcs = new ArrayList<GameCard>();
+			gcs = new ArrayList<>();
 		for(int i=0;i<gcs.size();i++){
 			Log.d("Zone","Zone id:"+getZoneId()+"Card added: "+gcs.get(i).getGameId());
 			addCard(gcs.get(i));
@@ -102,7 +104,7 @@ public abstract class Zone {
 		
 		optionMap.put(ACTION_TAP,ctr++);//11
 		
-		optionMap.put(ACTION_SHUFFLE,ctr++);//12
+		optionMap.put(ACTION_SHUFFLE, ctr++);//12
 	}
 	public ArrayList<GameCard> getCards(){
 		return mCardList;

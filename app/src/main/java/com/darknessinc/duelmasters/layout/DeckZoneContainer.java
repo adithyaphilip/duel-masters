@@ -12,16 +12,16 @@ import com.darknessinc.duelmasters.zone.DeckZone;
 import com.darknessinc.duelmasters.zone.Zone;
 
 /**
- * Assumes View passed to it in constructor is an ImageView
+ * Uses an image view
  * NOTE w.r.t Turning up face card: Assumes that getHeight and getWidth can be called to get correct values on this Deck
  * @author USER
  * TODO check for null when deck is empty. Do edge case test for all ZoneContainers.
  */
 public class DeckZoneContainer extends ZoneContainer {
 	ImageView mFaceView;
-	public DeckZoneContainer(View r, Zone z) {
+	public DeckZoneContainer(ImageView r, Zone z) {
 		super(r, z);
-		mFaceView = (ImageView)r;
+		mFaceView = r;
 		resetFace();
 	}
 	@Override

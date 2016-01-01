@@ -33,9 +33,6 @@ public class InstructionDecoder {
 	 * Instruction is delimited using : to differentiate fields
 	 * in case instruction does not require a card, we can simply supply the player id as card id
 	 * instruction is assumed to always have a zoneid
-	 * @param instruction
-	 * @param from
-	 * @param to
 	 */
 	public static void decodeInstruction(String instruction,GameActivity activity){
 		Log.e("TESTING","instruction: "+instruction);
@@ -45,8 +42,6 @@ public class InstructionDecoder {
 		int zoneFromId = Integer.parseInt(parts[2]);
 		int zoneToId = Integer.parseInt(parts[3]);
 		ZoneContainer zcFrom = activity.getZoneContainer(gameCardId, zoneFromId);
-		
-		String result="";
 		
 		//print message here TODO
 		switch(opCode){
@@ -84,8 +79,7 @@ public class InstructionDecoder {
 	/**
 	 * returns message to be displayed based on actions performed by instruction
 	 * NOTE:- Assumes instruction was first executed, then the message to display was requested
-	 * @param message
-	 * @return
+	 * @return human readable description of given instruction
 	 */
 	public static String getInstructionMessage(String instruction, GameActivity activity){
 		String parts[] = instruction.split(":");

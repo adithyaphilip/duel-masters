@@ -16,31 +16,20 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
 import android.widget.Toast;
 
 import com.darknessinc.duelmasters.R;
+import com.darknessinc.duelmasters.activity.util.ZoneContainerCollection;
 import com.darknessinc.duelmasters.bluetooth.BluetoothChatService;
 import com.darknessinc.duelmasters.bluetooth.BluetoothMediator;
 import com.darknessinc.duelmasters.cards.GameCard;
 import com.darknessinc.duelmasters.feed.InstructionDecoder;
-import com.darknessinc.duelmasters.layout.DeckZoneContainer;
-import com.darknessinc.duelmasters.layout.GraveZoneContainer;
-import com.darknessinc.duelmasters.layout.HandZoneContainer;
-import com.darknessinc.duelmasters.layout.LinearLayoutZoneContainer;
-import com.darknessinc.duelmasters.layout.ShieldZoneContainer;
 import com.darknessinc.duelmasters.layout.ZoneContainer;
 import com.darknessinc.duelmasters.player.GamePlayer;
 import com.darknessinc.duelmasters.player.Player;
-import com.darknessinc.duelmasters.zone.BattleZone;
-import com.darknessinc.duelmasters.zone.DeckZone;
-import com.darknessinc.duelmasters.zone.GraveZone;
-import com.darknessinc.duelmasters.zone.HandZone;
-import com.darknessinc.duelmasters.zone.ManaZone;
-import com.darknessinc.duelmasters.zone.ShieldZone;
 
 /**
- * 
+ *
  * @author USER
  * Expects "player1" and "player2" containing Parcelable Player objects
  * Expects passed Player objects to be already initialised with given cards
@@ -49,7 +38,7 @@ import com.darknessinc.duelmasters.zone.ShieldZone;
  */
 public class GameActivity extends Activity {
 	//Bluetooth Stuff
-	ArrayList<String> msgs=new ArrayList<String>();
+	ArrayList<String> msgs=new ArrayList<>();
 	ListView lv;
 	ArrayAdapter<String> adapter;
 	private static final String TAG = "BluetoothChat";
@@ -58,7 +47,6 @@ public class GameActivity extends Activity {
 	// Message types sent from the BluetoothChatService Handler
 	public static final int MESSAGE_STATE_CHANGE = 1;
 	public static final int MESSAGE_READ = 2;
-	public static final int MESSAGE_WRITE = 3;
 	public static final int MESSAGE_DEVICE_NAME = 4;
 	public static final int MESSAGE_TOAST = 5;
 
@@ -66,60 +54,48 @@ public class GameActivity extends Activity {
 	public static final String DEVICE_NAME = "device_name";
 	public static final String TOAST = "toast";
 
-	// Intent request codes
-	private static final int REQUEST_CONNECT_DEVICE = 12;
-	private static final int REQUEST_ENABLE_BT = 13;
-
 	// Name of the connected device
 	private String mConnectedDeviceName = null;
 	// Member object for the chat services
 	private BluetoothChatService mChatService = null;
-	
+
 	//End of Bluetooth Stuff
-	
+
 	public final static int CARD_OPTIONS_ACTIVITY = 1;
 	public static final int CARD_CHOOSER_ACTIVITY = 2;
-	
+
 	public static final String KEY_PLAYER1="player1";
 	public static final String KEY_PLAYER2="player2";
-	
+
 	private static final String CHAT_MESSAGE_INDICATOR="!#";
 
-	
-	GamePlayer mP1;
-	GamePlayer mP2;
-	
+    private static final String SAVED_CARD_LIST_P1 = "card_list_p1";
+    private static final String SAVED_CARD_LIST_P2 = "card_list_p2";
+    private static final String SAVED_PLAYER_P1 = "player_p1";
+    private static final String SAVED_PLAYER_P2 = "player_p2";
+
+    Player mP1;
+    Player mP2;
+	GamePlayer mGp1;
+	GamePlayer mGp2;
+
 	//TODO refactor below names
-	
+
 	LinearLayout mP1Hand;
 	LinearLayout mP1Mana;
 	LinearLayout mP1Shield;
 	LinearLayout mP1Battle;
 	ImageView mP1Deck;
-	
+
 	ImageView mP1Grave;
-	
+
 	LinearLayout mP2Hand;
 	LinearLayout mP2Mana;
 	LinearLayout mP2Shield;
 	LinearLayout mP2Battle;
 	ImageView mP2Deck;
 	ImageView mP2Grave;
-	
-	ZoneContainer mP1HandZone;
-	ZoneContainer mP1ManaZone;
-	ZoneContainer mP1DeckZone;
-	ZoneContainer mP1GraveZone;
-	ZoneContainer mP1ShieldZone;
-	ZoneContainer mP1BattleZone;
-	
-	ZoneContainer mP2HandZone;
-	ZoneContainer mP2ManaZone;
-	ZoneContainer mP2DeckZone;
-	ZoneContainer mP2GraveZone;
-	ZoneContainer mP2ShieldZone;
-	ZoneContainer mP2BattleZone;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState){
 		super.onCreate(savedInstanceState);
@@ -134,43 +110,53 @@ public class GameActivity extends Activity {
 		mP1Battle = (LinearLayout)findViewById(R.id.p1_battle);
 		mP1Deck = (ImageView)findViewById(R.id.p1_deck_iv);
 		mP1Grave = (ImageView)findViewById(R.id.p1_grave_iv);
-		
+
 		mP2Hand = (LinearLayout)findViewById(R.id.p2_hand);
 		mP2Mana = (LinearLayout)findViewById(R.id.p2_mana);
 		mP2Shield = (LinearLayout)findViewById(R.id.p2_shield);
 		mP2Battle = (LinearLayout)findViewById(R.id.p2_battle);
 		mP2Deck = (ImageView)findViewById(R.id.p2_deck_iv);
 		mP2Grave = (ImageView)findViewById(R.id.p2_grave_iv);
-		//Finished retrieving all layouts	
-		
+		//Finished retrieving all layouts
+
+        ZoneContainerCollection p1ZcCollection;
+        ZoneContainerCollection p2ZcCollection;
+
 		//Setting up players for later use by containers and gameplayers
-		Intent i = getIntent();
-		Player p1 = i.getParcelableExtra("player1");
-		Player p2 = i.getParcelableExtra("player2");
-		//Finished setting up players
-		
+
+        if (savedInstanceState != null) {// we're being restored from a saved state
+			Log.e("PHILIP", "being restored from saved state");
+			mP1 = savedInstanceState.getParcelable(SAVED_PLAYER_P1);
+            mP2 = savedInstanceState.getParcelable(SAVED_PLAYER_P2);
+            p1ZcCollection = new ZoneContainerCollection(
+                    (ZoneContainerCollection.GameCardsLists)
+                            savedInstanceState.getParcelable(SAVED_CARD_LIST_P1),
+                    mP1Mana, mP1Hand, mP1Shield, mP1Battle, mP1Grave, mP1Deck);
+            p2ZcCollection = new ZoneContainerCollection(
+                    (ZoneContainerCollection.GameCardsLists)
+                            savedInstanceState.getParcelable(SAVED_CARD_LIST_P2),
+                    mP2Mana, mP2Hand, mP2Shield, mP2Battle, mP2Grave, mP2Deck);
+			Log.e("PHILIP", "zc1" + p1ZcCollection);
+			Log.e("PHILIP", "being restored from saved state");
+		} else { // we're being started afresh
+            Intent i = getIntent();
+            mP1 = i.getParcelableExtra("player1");
+            mP2 = i.getParcelableExtra("player2");
+            p1ZcCollection = new ZoneContainerCollection(mP1.getGameCards(),
+                    mP1Mana, mP1Hand, mP1Shield, mP1Battle, mP1Grave, mP1Deck);
+            p2ZcCollection = new ZoneContainerCollection(mP2.getGameCards(),
+                    mP2Mana, mP2Hand, mP2Shield, mP2Battle, mP2Grave, mP2Deck);
+        }
+
 		//initialising all zones. Only decks are set with cards from players. Requires players to be initialised
 		//mP1Deck used simply to ensure each layout will know what size to make the cards they add
-		mP1HandZone = new HandZoneContainer(mP1Hand, new HandZone(new ArrayList<GameCard>()),mP1Deck);
-		mP1ManaZone = new LinearLayoutZoneContainer(mP1Mana, new ManaZone(new ArrayList<GameCard>()),mP1Deck);
-		mP1DeckZone = new DeckZoneContainer(mP1Deck, new DeckZone(p1.getGameCards()));
-		mP1GraveZone = new GraveZoneContainer(mP1Grave, new GraveZone(new ArrayList<GameCard>()));
-		mP1ShieldZone = new ShieldZoneContainer(mP1Shield, new ShieldZone(new ArrayList<GameCard>()),mP1Deck);
-		mP1BattleZone = new LinearLayoutZoneContainer(mP1Battle, new BattleZone(new ArrayList<GameCard>()),mP1Deck);
-		 
-		mP2HandZone = new HandZoneContainer (mP2Hand, new HandZone(new ArrayList<GameCard>()),mP1Deck);
-		mP2ManaZone = new LinearLayoutZoneContainer(mP2Mana, new ManaZone(new ArrayList<GameCard>()),mP1Deck);
-		mP2DeckZone = new DeckZoneContainer(mP2Deck, new DeckZone(p2.getGameCards()));
-		mP2GraveZone = new GraveZoneContainer(mP2Grave, new GraveZone(new ArrayList<GameCard>()));
-		mP2ShieldZone = new ShieldZoneContainer(mP2Shield, new ShieldZone(new ArrayList<GameCard>()),mP1Deck);
-		mP2BattleZone = new LinearLayoutZoneContainer(mP2Battle, new BattleZone(new ArrayList<GameCard>()),mP1Deck);
 		//Finished initialising zones
 
 		//Setting up gameplayers
-		mP1 = new GamePlayer(p1,mP1HandZone, mP1ManaZone, mP1DeckZone, mP1GraveZone, mP1ShieldZone, mP1BattleZone);
-		mP2 = new GamePlayer(p2,mP2HandZone, mP2ManaZone, mP2DeckZone, mP2GraveZone, mP2ShieldZone, mP2BattleZone);
+		mGp1 = new GamePlayer(mP1, p1ZcCollection);
+		mGp2 = new GamePlayer(mP2, p2ZcCollection);
 		//finished setting up gameplayers
-		
+
 		ViewTreeObserver observer = mP1Deck.getViewTreeObserver();
 		observer.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 		    @Override
@@ -180,22 +166,32 @@ public class GameActivity extends Activity {
 		    	mP1Mana.setMinimumHeight(mP1Deck.getHeight());
 		    	mP1Shield.setMinimumHeight(mP1Deck.getHeight());
 		    	mP1Battle.setMinimumHeight(mP1Deck.getHeight());
-		    	
+
 		    	mP2Hand.setMinimumHeight(mP2Deck.getHeight());
 		    	mP2Mana.setMinimumHeight(mP2Deck.getHeight());
 		    	mP2Shield.setMinimumHeight(mP2Deck.getHeight());
-		    	mP2Battle.setMinimumHeight(mP2Deck.getHeight());	
-		    	
+		    	mP2Battle.setMinimumHeight(mP2Deck.getHeight());
 		    }
 		});
-		
+
 		lv = (ListView) findViewById(R.id.feed_lv);
-		
-		adapter = new ArrayAdapter<String>(this,
-		        android.R.layout.simple_list_item_1, msgs);
+
+		adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, msgs);
 		 lv.setAdapter(adapter);
 	}
-	@Override
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        // save the state so it can be restored on re-creation
+        outState.putParcelable(SAVED_PLAYER_P1, mP1);
+        outState.putParcelable(SAVED_PLAYER_P2, mP2);
+        outState.putParcelable(SAVED_CARD_LIST_P1, mGp1.getGameCardLists());
+        outState.putParcelable(SAVED_CARD_LIST_P2, mGp2.getGameCardLists());
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
 	protected void onActivityResult(int requestCode, int resultCode,Intent data){
 		switch(requestCode){
 		case CARD_OPTIONS_ACTIVITY:{//Assumes data can never be null
@@ -243,7 +239,7 @@ public class GameActivity extends Activity {
 	}
 	/**
 	 * gameId necessary as Player id is encoded in it
-	 * @param gameId
+	 * @param gameId gameId of any card belonging to concerned player
 	 * @param zoneId
 	 * @return
 	 */
@@ -253,10 +249,10 @@ public class GameActivity extends Activity {
 		return gPlayer.getZoneContainer(zoneId);
 	}
 	public GamePlayer getPlayer(int playerId){
-		if(mP1.getId()==playerId)
-			return mP1;
-		if(mP2.getId()==playerId)
-			return mP2;
+		if(mGp1.getId()==playerId)
+			return mGp1;
+		if(mGp2.getId()==playerId)
+			return mGp2;
 		Log.e("GameActivity","GetZoneContainer: No player with id: "+playerId);
 		return null;
 	}
@@ -267,15 +263,15 @@ public class GameActivity extends Activity {
 		return gc.getGameId()%10;
 	}
 	public GameCard getGameCard(int gameId){
-		for(int i=0;i<mP1.getGameCards().size();i++)
-			if(gameId==mP1.getGameCards().get(i).getGameId())
-				return mP1.getGameCards().get(i);
-		for(int i=0;i<mP2.getGameCards().size();i++)
-			if(gameId==mP2.getGameCards().get(i).getGameId())
-				return mP2.getGameCards().get(i);
+		for(int i=0;i< mGp1.getGameCards().size();i++)
+			if(gameId== mGp1.getGameCards().get(i).getGameId())
+				return mGp1.getGameCards().get(i);
+		for(int i=0;i< mGp2.getGameCards().size();i++)
+			if(gameId== mGp2.getGameCards().get(i).getGameId())
+				return mGp2.getGameCards().get(i);
 		return null;
 	}
-	
+
 	//Bluetoot Stuff
 	@Override
 	public void onStart() {
@@ -331,7 +327,7 @@ public class GameActivity extends Activity {
 	}
 	/**
 	 * Sends a message.
-	 * 
+	 *
 	 * @param message
 	 *            A string of text to send.
 	 */
@@ -342,9 +338,9 @@ public class GameActivity extends Activity {
 					.show();
 			return;
 		}
-		Log.d("sendBTMessage GameActivity",message);
+		Log.d("sendBTMessage",message);
 		// Check that there's actually something to send
-		
+
 			if (message.length() > 0) {
 				// Get the message bytes and tell the BluetoothChatService to write
  //Decoder acts in before sending
@@ -418,11 +414,11 @@ public class GameActivity extends Activity {
 			}
 		}
 	};
-	
+
 	public void updateFeed(){
-		adapter = new ArrayAdapter<String>(this,
+		adapter = new ArrayAdapter<>(this,
 		        android.R.layout.simple_list_item_1, msgs);
 		 lv.setAdapter(adapter);
 	}
-	
+
 }

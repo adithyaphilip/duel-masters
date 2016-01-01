@@ -2,9 +2,9 @@ package com.darknessinc.duelmasters.layout;
 
 import android.app.Activity;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
+import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
 import com.darknessinc.duelmasters.R;
@@ -17,7 +17,7 @@ import com.darknessinc.duelmasters.zone.Zone;
 
 public class HandZoneContainer extends LinearLayoutZoneContainer {
 
-	public HandZoneContainer(View r, Zone z, ImageView t) {
+	public HandZoneContainer(LinearLayout r, Zone z, ImageView t) {
 		super(r, z, t);
 	}
 	@Override
@@ -25,14 +25,14 @@ public class HandZoneContainer extends LinearLayoutZoneContainer {
 		if(ImplicitCardDetails.getPlayerId(gc.getGameId())==ImplicitPlayerDetails.getOwnPlayerId())
 			super.addCardView(gc, reqWidth, reqHeight);
 		else{
-			Log.d("OpponentHandZone addCardView","width: "+reqWidth+" height: "+reqHeight);
+			Log.d("OpponentHandZone","addCardView width: "+reqWidth+" height: "+reqHeight);
 			GameCardView cv = gc.getGameCardView(mLl.getContext(),reqWidth, reqHeight);
 			cv.setImageResource(R.drawable.dmcardback);
 			cv.setOnClickListener(new CardClickListener(gc, getZone(), (Activity)mLl.getContext()));
 			cv.setAdjustViewBounds(true);
 			cv.setScaleType(ScaleType.CENTER_INSIDE);
-			LayoutParams lp = new LayoutParams(mReqWidth, LayoutParams.WRAP_CONTENT);
-			int dip = SizeManager.getDip(2,((Activity)cv.getContext()).getResources().getDisplayMetrics());
+			LayoutParams lp = new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			int dip = SizeManager.getDip(2, (cv.getContext()).getResources().getDisplayMetrics());
 			lp.setMargins(dip, dip, dip, dip);
 			mLl.addView(cv,lp);
 		}
