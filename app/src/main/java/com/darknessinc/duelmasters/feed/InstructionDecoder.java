@@ -30,12 +30,12 @@ public class InstructionDecoder {
     public final static int ACTION_SHUFFLE = 7;
 
     /**
-     * TODO refactor to name executeInstruction
+     * Executes a given instruction
      * Instruction is delimited using : to differentiate fields
      * in case instruction does not require a card, we can simply supply the player id as card id
      * instruction is assumed to always have a zoneid
      */
-    public static void decodeInstruction(String instruction, GameActivity activity) {
+    public static void executeInstruction(final String instruction, GameActivity activity) {
         Log.e("TESTING", "instruction: " + instruction);
         String parts[] = instruction.split(":");
         int opCode = Integer.parseInt(parts[0]);
@@ -72,6 +72,9 @@ public class InstructionDecoder {
                 activity.startActivityForResult(i, GameActivity.CARD_CHOOSER_ACTIVITY);
                 break;
         }
+
+        String show = InstructionDecoder.getInstructionMessage(instruction, activity);
+        activity.addToFeed(show);
     }
 
     public static void shiftZone(int gameCardId, ZoneContainer from, ZoneContainer to) {
@@ -139,6 +142,12 @@ public class InstructionDecoder {
         return message + ".";
     }
 
+    /**
+     * An instruction needs have its cardid modified to look like the other players card when sent
+     * to the other phone
+     * @param instruction
+     * @return
+     */
     public static String getInstructionToSend(String instruction) {
         String parts[] = instruction.split(":");
         int cardid = Integer.parseInt(parts[1]);

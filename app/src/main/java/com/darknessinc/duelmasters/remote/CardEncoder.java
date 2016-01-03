@@ -1,8 +1,6 @@
-package com.darknessinc.duelmasters.bluetooth;
+package com.darknessinc.duelmasters.remote;
 
 import java.util.ArrayList;
-
-import android.util.Log;
 
 import com.darknessinc.duelmasters.cards.DatabaseCardRetriever;
 import com.darknessinc.duelmasters.cards.GameCard;

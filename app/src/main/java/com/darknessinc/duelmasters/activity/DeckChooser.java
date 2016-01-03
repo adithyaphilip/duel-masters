@@ -1,26 +1,15 @@
 package com.darknessinc.duelmasters.activity;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -30,12 +19,10 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.darknessinc.duelmasters.R;
-import com.darknessinc.duelmasters.bluetooth.ConnectActivity;
-import com.darknessinc.duelmasters.cards.Card;
+import com.darknessinc.duelmasters.remote.ConnectActivity;
 import com.darknessinc.duelmasters.cards.DatabaseCardRetriever;
 import com.darknessinc.duelmasters.cards.GameCard;
 import com.darknessinc.duelmasters.fileutils.FilePathManager;
-import com.darknessinc.duelmasters.imageutils.ImageWriter;
 import com.darknessinc.duelmasters.player.Player;
 
 public class DeckChooser extends Activity {

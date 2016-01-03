@@ -12,7 +12,7 @@ import android.os.Message;
 import android.widget.ImageView;
 
 import com.darknessinc.duelmasters.R;
-import com.darknessinc.duelmasters.bluetooth.ConnectActivity;
+import com.darknessinc.duelmasters.remote.ConnectActivity;
 import com.darknessinc.duelmasters.cards.DatabaseCardRetriever;
 import com.darknessinc.duelmasters.cards.GameCard;
 import com.darknessinc.duelmasters.fileutils.FilePathManager;

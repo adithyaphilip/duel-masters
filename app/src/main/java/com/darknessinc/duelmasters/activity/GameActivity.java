@@ -1,12 +1,12 @@
 package com.darknessinc.duelmasters.activity;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -20,13 +20,13 @@ import android.widget.Toast;
 
 import com.darknessinc.duelmasters.R;
 import com.darknessinc.duelmasters.activity.util.ZoneContainerCollection;
-import com.darknessinc.duelmasters.bluetooth.BluetoothChatService;
-import com.darknessinc.duelmasters.bluetooth.BluetoothMediator;
+import com.darknessinc.duelmasters.remote.ConnectionReceiver;
 import com.darknessinc.duelmasters.cards.GameCard;
 import com.darknessinc.duelmasters.feed.InstructionDecoder;
 import com.darknessinc.duelmasters.layout.ZoneContainer;
 import com.darknessinc.duelmasters.player.GamePlayer;
 import com.darknessinc.duelmasters.player.Player;
+import com.darknessinc.duelmasters.remote.RemoteConnection;
 
 /**
  * @author USER
@@ -35,38 +35,20 @@ import com.darknessinc.duelmasters.player.Player;
  *         Assumes playerid is last digit of gameid
  *         Assumes player with id 1 is opponent and player with id 2 is not opponent
  */
-public class GameActivity extends Activity {
+public class GameActivity extends Activity implements ConnectionReceiver {
     //Bluetooth Stuff
-    ArrayList<String> msgs = new ArrayList<>();
+    private ArrayList<String> msgs = new ArrayList<>();
     ListView lv;
     ArrayAdapter<String> adapter;
-    private static final String TAG = "BluetoothChat";
-    private static final boolean D = true;
 
-    // Message types sent from the BluetoothChatService Handler
-    public static final int MESSAGE_STATE_CHANGE = 1;
-    public static final int MESSAGE_READ = 2;
-    public static final int MESSAGE_DEVICE_NAME = 4;
-    public static final int MESSAGE_TOAST = 5;
-
-    // Key names received from the BluetoothChatService Handler
-    public static final String DEVICE_NAME = "device_name";
-    public static final String TOAST = "toast";
-
-    // Name of the connected device
-    private String mConnectedDeviceName = null;
-    // Member object for the chat services
-    private BluetoothChatService mChatService = null;
-
-    //End of Bluetooth Stuff
+    private RemoteConnection mRemoteConnection;
 
     public final static int CARD_OPTIONS_ACTIVITY = 1;
     public static final int CARD_CHOOSER_ACTIVITY = 2;
 
     public static final String KEY_PLAYER1 = "player1";
     public static final String KEY_PLAYER2 = "player2";
-
-    private static final String CHAT_MESSAGE_INDICATOR = "!#";
+    public static final String INTENT_KEY_CONNECTION = "connection";
 
     private static final String SAVED_CARD_LIST_P1 = "card_list_p1";
     private static final String SAVED_CARD_LIST_P2 = "card_list_p2";
@@ -95,12 +77,17 @@ public class GameActivity extends Activity {
     ImageView mP2Deck;
     ImageView mP2Grave;
 
+    private boolean mPaused = false;
+    private Queue<String> mPendingInstructions = new LinkedList<>();
+    private Queue<String> mPendingChat = new LinkedList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mChatService = BluetoothMediator.mChatService;//should be set by calling activity
-        mChatService.setHandler(mHandler);
+        mRemoteConnection = getIntent().getParcelableExtra(INTENT_KEY_CONNECTION);
+        mRemoteConnection.startListening(this);
+
         setContentView(R.layout.activity_game);
         //Retrieving all layouts
         mP1Hand = (LinearLayout) findViewById(R.id.p1_hand);
@@ -201,7 +188,7 @@ public class GameActivity extends Activity {
                 boolean viewed = data.getBooleanExtra(CardOptionChooserActivity.KEY_RETURN_CARD_VIEWED, false);
                 if (viewed) {
                     String instr = InstructionDecoder.getPeekInstruction(gc);
-                    InstructionDecoder.decodeInstruction(instr, this);
+                    InstructionDecoder.executeInstruction(instr, this); // executes the instruction
                     String msg = InstructionDecoder.getInstructionMessage(instr, this);
                     msgs.add(msg);
                     updateFeed();
@@ -210,7 +197,7 @@ public class GameActivity extends Activity {
                 if (resultCode == Activity.RESULT_OK) {
                     if (viewed) {
                         String instr = InstructionDecoder.getPeekInstruction(gc);
-                        InstructionDecoder.decodeInstruction(instr, this);
+                        InstructionDecoder.executeInstruction(instr, this);
                         String msg = InstructionDecoder.getInstructionMessage(instr, this);
                         msgs.add(msg);
                         updateFeed();
@@ -219,7 +206,7 @@ public class GameActivity extends Activity {
                     String option = data.getStringExtra(CardOptionChooserActivity.KEY_RETURN_OPTION);
                     ZoneContainer zc = getZoneContainer(gc.getGameId(), gc.getZoneId());
                     String instruction = zc.generateInstruction(gc.getGameId(), option);
-                    InstructionDecoder.decodeInstruction(instruction, this);
+                    InstructionDecoder.executeInstruction(instruction, this);
                     String msg = InstructionDecoder.getInstructionMessage(instruction, this);
                     msgs.add(msg);
                     updateFeed();
@@ -241,11 +228,12 @@ public class GameActivity extends Activity {
     }
 
     /**
-     * gameId necessary as Player id is encoded in it
+     * returns ZoneContainer object for given zoneId
      *
-     * @param gameId gameId of any card belonging to concerned player
-     * @param zoneId
-     * @return
+     * @param gameId gameId of any card belonging to concerned player,
+     *               necessary as Player id is encoded in it
+     * @param zoneId id of zone in which card is present
+     * @return ZoneContainer for corresponding zone
      */
     public ZoneContainer getZoneContainer(int gameId, int zoneId) {
         Log.d("GameActivity", "getZoneContainer: gameId: " + gameId + " zoneId: " + zoneId);
@@ -280,153 +268,40 @@ public class GameActivity extends Activity {
         return null;
     }
 
-    //Bluetoot Stuff
-    @Override
-    public void onStart() {
-        super.onStart();
-        /*if (D)
-            Log.e(TAG, "++ ON START ++");
-
-		// If BT is not on, request that it be enabled.
-		// setupChat() will then be called during onActivityResult
-		if (!mBluetoothAdapter.isEnabled()) {
-			Intent enableIntent = new Intent(
-					BluetoothAdapter.ACTION_REQUEST_ENABLE);
-			startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-			// Otherwise, setup the chat session
-		} else {
-			if (mChatService == null)
-				setupChat();
-		}*/
-    }
-
     @Override
     public synchronized void onResume() {
         super.onResume();
-        if (D)
-            Log.e(TAG, "+ ON RESUME +");
+        mPaused = false;
+        // execute any instructions that might have been queued while we were paused
+        for(String instr: mPendingInstructions) {
+            executeInstruction(instr);
+        }
 
-        // Performing this check in onResume() covers the case in which BT was
-        // not enabled during onStart(), so we were paused to enable it...
-        // onResume() will be called when ACTION_REQUEST_ENABLE activity
-        // returns.
-        if (mChatService != null) {
-            // Only if the state is STATE_NONE, do we know that we haven't
-            // started already
-            if (mChatService.getState() == BluetoothChatService.STATE_NONE) {
-                // Start the Bluetooth chat services
-                mChatService.start();
-            }
+        for(String chat: mPendingChat) {
+            addToFeed(chat);
         }
     }
 
     @Override
     public synchronized void onPause() {
         super.onPause();
-        if (D)
-            Log.e(TAG, "- ON PAUSE -");
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (D)
-            Log.e(TAG, "-- ON STOP --");
+        mPaused = true;
     }
 
     private void sendInstruction(String instruction) {
-        sendBTMessage(InstructionDecoder.getInstructionToSend(instruction));
-    }
-
-    /**
-     * Sends a message.
-     *
-     * @param message A string of text to send.
-     */
-    private void sendBTMessage(String message) {
-        // Check that we're actually connected before trying anything
-        if (mChatService.getState() != BluetoothChatService.STATE_CONNECTED) {
-            Toast.makeText(this, R.string.not_connected, Toast.LENGTH_SHORT)
-                    .show();
-            return;
-        }
-        Log.d("sendBTMessage", message);
-        // Check that there's actually something to send
-
-        if (message.length() > 0) {
-            // Get the message bytes and tell the BluetoothChatService to write
-            //Decoder acts in before sending
-            byte[] send = message.getBytes();
-            mChatService.write(send);
-        }
+        mRemoteConnection.sendInstruction(instruction);
     }
 
     public void onSendClicked(View v) {
-        EditText et = (EditText) findViewById(R.id.message_et);
-        String msg = et.getText() + "";
-        msg = msg.replaceAll(":", " ");
+        String msg = ((EditText) findViewById(R.id.message_et)).getText().toString();
+               // .replaceAll(":", " "); // terrible but effective sanitisation (not necessary since RemoteConnection should reliably decode and encode chat messages)
         String ownMsg = "You: " + msg;
-        String oppMsg = CHAT_MESSAGE_INDICATOR + "Opponent: " + msg;//starting P is token indicating message
         if (!msg.equals("")) {
+            mRemoteConnection.sendChatMessage(msg);
             msgs.add(ownMsg);
             updateFeed();
-            sendBTMessage(oppMsg);
         }
     }
-
-    // The Handler that gets information back from the BluetoothChatService
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MESSAGE_STATE_CHANGE:
-                    if (D)
-                        Log.i(TAG, "MESSAGE_STATE_CHANGE: " + msg.arg1);
-                    switch (msg.arg1) {
-                        case BluetoothChatService.STATE_CONNECTED:
-                            Toast.makeText(GameActivity.this, getString(R.string.title_connected_to,
-                                    mConnectedDeviceName), Toast.LENGTH_SHORT).show();
-                            break;
-                        case BluetoothChatService.STATE_CONNECTING:
-                            Toast.makeText(GameActivity.this, getString(R.string.title_connecting,
-                                    mConnectedDeviceName), Toast.LENGTH_SHORT).show();
-                            break;
-                        case BluetoothChatService.STATE_LISTEN:
-                        case BluetoothChatService.STATE_NONE:
-                            Toast.makeText(GameActivity.this, getString(R.string.title_not_connected,
-                                    mConnectedDeviceName), Toast.LENGTH_SHORT).show();
-                            break;
-                    }
-                    break;
-                case MESSAGE_READ:
-                    byte[] readBuf = (byte[]) msg.obj;
-                    // construct a string from the valid bytes in the buffer
-                    String readMessage = new String(readBuf, 0, msg.arg1);
-                    String show = "";
-                    if (readMessage.startsWith(CHAT_MESSAGE_INDICATOR)) {
-                        show = readMessage.substring(CHAT_MESSAGE_INDICATOR.length(), readMessage.length());
-                    } else {
-                        InstructionDecoder.decodeInstruction(readMessage, GameActivity.this);
-                        show = InstructionDecoder.getInstructionMessage(readMessage, GameActivity.this);
-                    }
-                    msgs.add(show);
-                    updateFeed();
-                    break;
-                case MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
-                    mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
-                    Toast.makeText(getApplicationContext(),
-                            "Connected to " + mConnectedDeviceName,
-                            Toast.LENGTH_SHORT).show();
-                    break;
-                case MESSAGE_TOAST:
-                    Toast.makeText(getApplicationContext(),
-                            msg.getData().getString(TOAST), Toast.LENGTH_SHORT)
-                            .show();
-                    break;
-            }
-        }
-    };
 
     public void updateFeed() {
         adapter = new ArrayAdapter<>(this,
@@ -434,4 +309,35 @@ public class GameActivity extends Activity {
         lv.setAdapter(adapter);
     }
 
+    private void executeInstruction(String instr) {
+        InstructionDecoder.executeInstruction(instr, this);
+    }
+
+    public void addToFeed(String msg) {
+        msgs.add(msg);
+        updateFeed();
+    }
+
+    @Override
+    public void receiveChatMessage(String msg) {
+        if(mPaused) {
+            mPendingChat.add("Opp: " + msg);
+        } else {
+            addToFeed("Opp: " + msg);
+        }
+    }
+
+    @Override
+    public void receiveInstruction(String instruction) {
+        if(mPaused) {
+            mPendingInstructions.add(instruction);
+        } else {
+            executeInstruction(instruction);
+        }
+    }
+
+    @Override
+    public void onConnectionError() {
+        Toast.makeText(this, "Connection lost! Restart game :(", Toast.LENGTH_LONG).show();
+    }
 }
