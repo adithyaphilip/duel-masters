@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,38 +52,53 @@ public class ConnectActivity extends Activity {
 
     private AtomicBoolean mSearching = new AtomicBoolean(false);
 
-    Thread mListener = new Thread() {
-        @Override
-        public void run() {
-            try {
-                ServerSocket serverSocket = new ServerSocket(DM_SERVER_PORT);
-                while (true) {
-                    Socket connSocket = serverSocket.accept();
-                    if (mSearching.get()) {
-                        connSocket.close();
-                        continue;
+    ServerSocket mServerSocket;
+
+
+    private void startListening() {
+        Thread listener = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    mServerSocket = new ServerSocket(DM_SERVER_PORT);
+                    while (true) {
+                        Socket connSocket = mServerSocket.accept();
+                        if (mSearching.get()) {
+                            connSocket.close();
+                            continue;
+                        }
+
+                        remoteIp = connSocket.getInetAddress().getHostAddress();
+
+                        Scanner sc = new Scanner(connSocket.getInputStream());
+                        String cardsString = sc.nextLine();
+                        mOpponentCards = getOpponentCards(cardsString);
+
+                        PrintWriter pw = new PrintWriter(connSocket.getOutputStream());
+                        pw.println(CardEncoder.getCardsString(mOwnCards));
+                        pw.flush();
+
+                        // depends on the client socket to close the connection socket
+                        mServerSocket.close();
+                        mStartHandler.sendEmptyMessage(0);
+                        break;
                     }
-
-                    remoteIp = connSocket.getInetAddress().getHostAddress();
-
-                    Scanner sc = new Scanner(connSocket.getInputStream());
-                    String cardsString = sc.nextLine();
-                    mOpponentCards = getOpponentCards(cardsString);
-
-                    PrintWriter pw = new PrintWriter(connSocket.getOutputStream());
-                    pw.println(CardEncoder.getCardsString(mOwnCards));
-                    pw.flush();
-
-                    // depends on the client socket to close the connection socket
-                    serverSocket.close();
-                    mStartHandler.sendEmptyMessage(0);
-                    break;
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        };
+        listener.start();
+    }
+
+    private void stopListening() {
+        // the thread will die with the exception
+        try {
+            mServerSocket.close();
+        } catch (IOException e) {
+            Log.e("ConnectActivity", "Failed to close ServerSocket!", e);
         }
-    };
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +106,18 @@ public class ConnectActivity extends Activity {
         setContentView(R.layout.activity_connect);
         mDBRetriever = new DatabaseCardRetriever(this);
         mOwnCards = (ArrayList<GameCard>) getIntent().getSerializableExtra(KEY_OWN_CARDS);
-        mListener.start();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        startListening();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopListening();
     }
 
     private void startGame() {
@@ -138,6 +165,8 @@ public class ConnectActivity extends Activity {
         pd.setCancelable(false);
         pd.show();
 
+        final ExecutorService executorService = Executors.newCachedThreadPool();
+
         final Handler progressHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
@@ -145,7 +174,13 @@ public class ConnectActivity extends Activity {
                 pd.dismiss();
                 if (remoteIp == null) {
                     Toast.makeText(ConnectActivity.this, "No one dares battle thee :(",
-                            Toast.LENGTH_LONG).show();
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ConnectActivity.this, "Connecting to " + remoteIp,
+                            Toast.LENGTH_SHORT).show();
+                    Log.d("ConnectAcitvity", "Remote Ip: " + remoteIp);
+                    executorService.shutdownNow();
+                    startGame();
                 }
             }
         };
@@ -154,12 +189,12 @@ public class ConnectActivity extends Activity {
             @Override
             public void run() {
 
-                final ExecutorService executorService = Executors.newCachedThreadPool();
                 final int startingIp = (getOwnIp() >> 8) << 8;
 
                 Log.d("ConnectAcitivity", "own ip: " + getOwnIp());
 
                 for (int i = startingIp; i - startingIp < 256; i++) {
+                    if(i==getOwnIp()) continue;
                     final String ip = intToIp(i);
                     Runnable r = new Runnable() {
                         @Override
@@ -169,7 +204,7 @@ public class ConnectActivity extends Activity {
 
                                 Socket connSocket = new Socket(ip, DM_SERVER_PORT);
 
-                                remoteIp = connSocket.getInetAddress().getHostAddress();
+                                remoteIp = ip;
 
                                 PrintWriter pw = new PrintWriter(connSocket.getOutputStream());
                                 pw.println(CardEncoder.getCardsString(mOwnCards));
@@ -181,13 +216,19 @@ public class ConnectActivity extends Activity {
 
                                 connSocket.close();
 
-                                mStartHandler.sendEmptyMessage(1);
+                                progressHandler.sendEmptyMessage(0);
                             } catch (Exception e) {
                                 Log.d("ConnectActivity", "Failed to connect to " + ip, e);
                             }
                         }
                     };
-                    executorService.execute(r);
+                    try {
+                        executorService.execute(r);
+                    } catch (RejectedExecutionException e) {
+                        // we've already started the game and started shutting down the executor
+                        // from the handler in the other thread, nothing more to do here
+                       return;
+                    }
                 }
                 executorService.shutdown();
                 try {

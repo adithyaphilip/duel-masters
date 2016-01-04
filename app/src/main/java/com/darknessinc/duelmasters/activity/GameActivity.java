@@ -126,8 +126,8 @@ public class GameActivity extends Activity implements ConnectionReceiver {
             Log.e("PHILIP", "being restored from saved state");
         } else { // we're being started afresh
             Intent i = getIntent();
-            mP1 = i.getParcelableExtra("player1");
-            mP2 = i.getParcelableExtra("player2");
+            mP1 = i.getParcelableExtra(KEY_PLAYER1);
+            mP2 = i.getParcelableExtra(KEY_PLAYER2);
             p1ZcCollection = new ZoneContainerCollection(mP1.getGameCards(),
                     mP1Mana, mP1Hand, mP1Shield, mP1Battle, mP1Grave, mP1Deck);
             p2ZcCollection = new ZoneContainerCollection(mP2.getGameCards(),
@@ -271,6 +271,7 @@ public class GameActivity extends Activity implements ConnectionReceiver {
     @Override
     public synchronized void onResume() {
         super.onResume();
+        mRemoteConnection.onActivityResumed();
         mPaused = false;
         // execute any instructions that might have been queued while we were paused
         for(String instr: mPendingInstructions) {
@@ -284,6 +285,7 @@ public class GameActivity extends Activity implements ConnectionReceiver {
 
     @Override
     public synchronized void onPause() {
+        mRemoteConnection.onActivityPaused();
         super.onPause();
         mPaused = true;
     }

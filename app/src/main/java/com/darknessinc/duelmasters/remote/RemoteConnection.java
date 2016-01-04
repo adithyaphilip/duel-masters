@@ -47,4 +47,8 @@ public abstract class RemoteConnection implements Parcelable {
         }
         return encodedMsg.substring(CHAT_MESSAGE_INDICATOR.length());
     }
+
+    public abstract void onActivityPaused();
+
+    public abstract void onActivityResumed();
 }

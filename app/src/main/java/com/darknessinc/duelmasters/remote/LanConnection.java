@@ -50,7 +50,8 @@ public class LanConnection extends RemoteConnection implements Parcelable {
                 }
                 try {
                     sendToRemote(mQueue.peek());
-                    mQueue.remove();
+                    String msg = mQueue.remove();
+                    Log.d("LanConnection", "Successfully sent msg to remote: " + msg);
                 } catch (IOException e) {
                     Log.e("LanConnection",
                             "Error connecting to " + REMOTE_ADDR + ":" + REMOTE_PORT);
@@ -72,26 +73,7 @@ public class LanConnection extends RemoteConnection implements Parcelable {
         }
     }
 
-    private Thread mReceiverThread = new Thread() {
-        @Override
-        public void run() {
-            try {
-                ServerSocket serverSocket = new ServerSocket(LOCAL_PORT);
-                while (true) {
-                    Socket connSocket = serverSocket.accept();
-                    Scanner sc = new Scanner(connSocket.getInputStream());
-                    String encMsg = sc.nextLine();
-                    connSocket.close();
-                    sc.close();
-                    Message msg = mHandler.obtainMessage();
-                    msg.obj = encMsg;
-                    mHandler.sendMessage(msg);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    };
+    private ServerSocket mListenerSocket;
 
     public LanConnection(int localPort, String remoteAddr, int remotePort) {
         REMOTE_ADDR = remoteAddr;
@@ -102,11 +84,44 @@ public class LanConnection extends RemoteConnection implements Parcelable {
     @Override
     public void startListening(ConnectionReceiver receiver) {
         super.setListener(receiver);
-        mReceiverThread.start();
+        resumeListening();
+    }
+
+    /**
+     * starts the thread that actually listens, assumed super.setListener has already been called
+     */
+    private void resumeListening() {
+        Thread listener = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    mListenerSocket = new ServerSocket(LOCAL_PORT);
+                    while (true) {
+                        Socket connSocket = mListenerSocket.accept();
+                        Scanner sc = new Scanner(connSocket.getInputStream());
+                        String encMsg = sc.nextLine();
+                        connSocket.close();
+                        sc.close();
+                        Message msg = mHandler.obtainMessage();
+                        msg.obj = encMsg;
+                        mHandler.sendMessage(msg);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        listener.start();
     }
 
     public void stopListening() {
-        mReceiverThread.stop();
+        // thread will die with exception when closed
+        try {
+            mListenerSocket.close();
+        } catch (IOException e) {
+            // just log
+            Log.e("LanConnection","Error closing listener socket at " + LOCAL_PORT, e);
+        }
     }
 
     @Override
@@ -117,6 +132,16 @@ public class LanConnection extends RemoteConnection implements Parcelable {
                 new SenderThread().start();
             }
         }
+    }
+
+    @Override
+    public void onActivityPaused() {
+        stopListening();
+    }
+
+    @Override
+    public void onActivityResumed() {
+        resumeListening();
     }
 
     public LanConnection(Parcel in) {

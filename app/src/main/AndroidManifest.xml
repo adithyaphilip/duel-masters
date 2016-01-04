@@ -38,7 +38,8 @@
         </activity>
         <activity
             android:name=".activity.GameActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".activity.CardChooserActivity"
@@ -57,16 +58,13 @@
             android:label="@string/title_activity_deck_builder">
         </activity>
         <activity
-            android:name=".activity.DeckList"
-            android:label="@string/title_activity_deck_list">
-        </activity>
-        <activity
             android:name=".activity.Decks"
             android:label="@string/title_activity_decks">
         </activity>
         <activity
             android:name=".remote.ConnectActivity"
-            android:label="@string/title_activity_connect">
+            android:label="@string/title_activity_connect"
+            android:screenOrientation="portrait">
         </activity>
         <activity
             android:name=".activity.PlayActivity"

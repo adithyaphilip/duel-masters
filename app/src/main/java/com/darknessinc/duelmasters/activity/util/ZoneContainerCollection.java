@@ -45,7 +45,7 @@ public class ZoneContainerCollection {
     private GameCardsLists mInitialGcl;
 
     public static class GameCardsLists implements Parcelable {
-        private ArrayList<GameCard>[] mZoneCards;
+        private ArrayList<GameCard>[] mZoneCards = new ArrayList[ZONE_COUNT];
 
         GameCardsLists(ArrayList<GameCard>[] zonesCards) {
             mZoneCards = zonesCards;
