@@ -20,11 +20,9 @@ public abstract class RemoteConnection implements Parcelable {
         sendEncodedMessage(InstructionDecoder.getInstructionToSend(ownInstruction));
     }
 
-    protected void setListener(ConnectionReceiver receiver) {
+    public void setListener(ConnectionReceiver receiver) {
         mReceiver = receiver;
     }
-
-    public abstract void startListening(ConnectionReceiver receiver);
 
     protected void receiveEncodedMessage(String encodedMsg) {
         if (isChatMessage(encodedMsg)) {

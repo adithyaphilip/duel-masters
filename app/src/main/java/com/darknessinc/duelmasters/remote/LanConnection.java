@@ -8,8 +8,10 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
@@ -81,12 +83,6 @@ public class LanConnection extends RemoteConnection implements Parcelable {
         LOCAL_PORT = localPort;
     }
 
-    @Override
-    public void startListening(ConnectionReceiver receiver) {
-        super.setListener(receiver);
-        resumeListening();
-    }
-
     /**
      * starts the thread that actually listens, assumed super.setListener has already been called
      */
@@ -95,7 +91,9 @@ public class LanConnection extends RemoteConnection implements Parcelable {
             @Override
             public void run() {
                 try {
-                    mListenerSocket = new ServerSocket(LOCAL_PORT);
+                    mListenerSocket = new ServerSocket();
+                    mListenerSocket.setReuseAddress(true);
+                    mListenerSocket.bind(new InetSocketAddress(LOCAL_PORT));
                     while (true) {
                         Socket connSocket = mListenerSocket.accept();
                         Scanner sc = new Scanner(connSocket.getInputStream());
@@ -107,7 +105,7 @@ public class LanConnection extends RemoteConnection implements Parcelable {
                         mHandler.sendMessage(msg);
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.d("LANConnection", "Stopping listener thread due to error", e);
                 }
             }
         };

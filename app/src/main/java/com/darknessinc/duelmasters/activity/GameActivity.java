@@ -86,7 +86,7 @@ public class GameActivity extends Activity implements ConnectionReceiver {
         super.onCreate(savedInstanceState);
 
         mRemoteConnection = getIntent().getParcelableExtra(INTENT_KEY_CONNECTION);
-        mRemoteConnection.startListening(this);
+        mRemoteConnection.setListener(this);
 
         setContentView(R.layout.activity_game);
         //Retrieving all layouts
@@ -275,6 +275,7 @@ public class GameActivity extends Activity implements ConnectionReceiver {
         mPaused = false;
         // execute any instructions that might have been queued while we were paused
         for(String instr: mPendingInstructions) {
+            Log.e("GameActivity", "Pending instruction: " + instr);
             executeInstruction(instr);
         }
 
@@ -285,8 +286,8 @@ public class GameActivity extends Activity implements ConnectionReceiver {
 
     @Override
     public synchronized void onPause() {
-        mRemoteConnection.onActivityPaused();
         super.onPause();
+        mRemoteConnection.onActivityPaused();
         mPaused = true;
     }
 
