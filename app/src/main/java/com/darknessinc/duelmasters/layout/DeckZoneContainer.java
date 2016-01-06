@@ -61,7 +61,8 @@ public class DeckZoneContainer extends ZoneContainer {
         if (gc == null) {
             Log.e("DECK", "DeckEmpty");
         } else
-            mFaceView.setImageBitmap(gc.getDbCard().getCardBitmap(mFaceView.getWidth(), 0));
+            mFaceView.setImageBitmap(gc.getDbCard().getCardBitmap(mFaceView.getWidth(), 0,
+                    mFaceView.getContext()));
     }
 
     public void indicateCard(int gameId) {

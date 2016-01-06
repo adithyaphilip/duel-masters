@@ -118,7 +118,8 @@ public class LinearLayoutZoneContainer extends ZoneContainer {
     public void revealCard(int gameId) {
         GameCardView cvToReveal = getGameCardView(gameId);
         int reqWidth = cvToReveal.getWidth();
-        Bitmap cardBm = cvToReveal.getGameCard().getDbCard().getCardBitmap(reqWidth, 0);
+        Bitmap cardBm = cvToReveal.getGameCard().getDbCard().getCardBitmap(reqWidth, 0,
+                cvToReveal.getContext());
         cvToReveal.setImageBitmap(cardBm);
     }
 

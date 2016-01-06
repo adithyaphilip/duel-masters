@@ -54,7 +54,7 @@
             android:label="@string/app_name">
         </activity>
         <activity
-            android:name=".decks.DeckBuilder"
+            android:name=".decks.DeckBuilderActivity"
             android:label="@string/title_activity_deck_builder">
         </activity>
         <activity

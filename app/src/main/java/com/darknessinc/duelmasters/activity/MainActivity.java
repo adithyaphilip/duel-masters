@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.darknessinc.duelmasters.R;
-import com.darknessinc.duelmasters.decks.DeckBuilder;
 
 public class MainActivity extends Activity {
 

@@ -1,19 +1,11 @@
 package com.darknessinc.duelmasters.decks;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Scanner;
 import java.util.StringTokenizer;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -24,7 +16,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -37,10 +28,11 @@ import android.widget.Toast;
 import com.darknessinc.duelmasters.R;
 import com.darknessinc.duelmasters.activity.KaiActivity;
 import com.darknessinc.duelmasters.cards.Card;
+import com.darknessinc.duelmasters.cards.DatabaseCardRetriever;
 import com.darknessinc.duelmasters.fileutils.FilePathManager;
 
-public class DeckBuilder extends Activity {
-    ArrayList<Card> cards = new ArrayList<Card>();//the one we should work on?//yes
+public class DeckBuilderActivity extends Activity {
+    ArrayList<Card> mCards = new ArrayList<>();//the one we should work on?//yes
     ListView lv;
     ArrayAdapter<Card> adapter;
     public final static String KEY_RETURN_DBIDS = "dbids";
@@ -62,7 +54,7 @@ public class DeckBuilder extends Activity {
         populateDeck();
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(this).
-                        setMessage("Use the + button to add cards to your deck\n\nPress and hold for Card info.\n\nSingle tap to remove from deck").
+                        setMessage("Use the + button to add mCards to your deck\n\nPress and hold for Card info.\n\nSingle tap to remove from deck").
                         setPositiveButton("Got It!", new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -76,13 +68,13 @@ public class DeckBuilder extends Activity {
 
 
         TextView tv = (TextView) findViewById(R.id.size);
-        tv.setText("SIZE OF DECK : " + cards.size());
-        if (cards.size() > 40) tv.setTextColor(Color.RED);
+        tv.setText("SIZE OF DECK : " + mCards.size());
+        if (mCards.size() > 40) tv.setTextColor(Color.RED);
         else tv.setTextColor(Color.WHITE);
         lv = (ListView) findViewById(R.id.list_view);
 
-        adapter = new ArrayAdapter<Card>(this,
-                android.R.layout.simple_list_item_1, cards);
+        adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_1, mCards);
         lv.setAdapter(adapter);
 
         lv.setOnItemClickListener(new OnItemClickListener() {
@@ -95,14 +87,14 @@ public class DeckBuilder extends Activity {
                 remove(card);
 
 
-                // cards.remove(card);
+                // mCards.remove(card);
 
             }
         });
         lv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> av, View v, int pos, long id) {
-                return onLongListItemClick(v, pos, id);
+                return onLongListItemClick(pos);
             }
         });
 
@@ -115,7 +107,7 @@ public class DeckBuilder extends Activity {
         //only last card is shown :P wait only 1 card is shown
         try {
             Scanner sc = new Scanner(f);
-            ArrayList<Integer> al = new ArrayList<Integer>();
+            ArrayList<Integer> al = new ArrayList<>();
 
             String s = sc.nextLine();
             Toast.makeText(getApplicationContext(), "SUCCESS: " + s, Toast.LENGTH_LONG).show();
@@ -128,8 +120,7 @@ public class DeckBuilder extends Activity {
             sc.close();
             String str = sb.toString();
             StringTokenizer st = new StringTokenizer(str, ",");
-            ArrayList<Integer> dbid = new ArrayList<Integer>();
-            int i = 0;
+            ArrayList<Integer> dbid = new ArrayList<>();
             Toast.makeText(getApplicationContext(), "WORKS 1", Toast.LENGTH_LONG).show();
 
 
@@ -138,15 +129,15 @@ public class DeckBuilder extends Activity {
              /*Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show();
 			 Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show();
 			 Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show(); */
-                int m = (Integer.valueOf(st.nextToken())).intValue();
+                int m = Integer.valueOf(st.nextToken());
                 Toast.makeText(getApplicationContext(), "WORKS 3", Toast.LENGTH_LONG).show();
                 dbid.add(m);
 
 
             }
             int[] temp = new int[al.size()];
-            for (i = 0; i < dbid.size(); i++) {
-                temp[i] = (int) al.get(i);
+            for (int i = 0; i < dbid.size(); i++) {
+                temp[i] = al.get(i);
 
             }
             //whats happening?
@@ -183,8 +174,7 @@ public class DeckBuilder extends Activity {
             sc.close();
             String str = sb.toString();
             StringTokenizer st = new StringTokenizer(str, ",");
-            ArrayList<Integer> dbid = new ArrayList<Integer>();
-            int i = 0;
+            ArrayList<Integer> dbid = new ArrayList<>();
             //Toast.makeText(getApplicationContext(), "WORKS 1", Toast.LENGTH_LONG).show();
 
 
@@ -193,15 +183,15 @@ public class DeckBuilder extends Activity {
 				 /*Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show();
 				 Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show();
 				 Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show(); */
-                int m = (Integer.valueOf(st.nextToken())).intValue();
+                int m = Integer.valueOf(st.nextToken());
                 //Toast.makeText(getApplicationContext(), "WORKS 3", Toast.LENGTH_LONG).show();
                 dbid.add(m);
 
 
             }
             temp = new int[dbid.size()];
-            for (i = 0; i < dbid.size(); i++) {
-                temp[i] = (int) dbid.get(i);
+            for (int i = 0; i < dbid.size(); i++) {
+                temp[i] = dbid.get(i);
 
             }
             //whats happening?
@@ -214,83 +204,17 @@ public class DeckBuilder extends Activity {
         }
 
         //int[] dbids=getDbIdsFromFile(s);
-        //	Toast.makeText(getApplicationContext(), dbids[0], Toast.LENGTH_LONG).show();
-        if (temp == null)
-            return;
         //Toast.makeText(this, "arraylength"+temp.length, Toast.LENGTH_SHORT).show();
-        cardmaker(getApplicationContext(), temp);                                          //correct? yea but i dunno about the cast to String in the previous part. You know it works right?nope. show?as in? run? no the previous activity
+        mCards = new DatabaseCardRetriever(this).getCards(temp);
+        //correct? yea but i dunno about the cast to String in the previous part. You know it works right?nope. show?as in? run? no the previous activity
     }
 
-    void cardmaker(Context ctx, int[] dbids) {
-
-        StringBuilder contents = new StringBuilder();
-        String sep = System.getProperty("line.separator");
-
-        try {
-            InputStream is = ctx.getResources().openRawResource(R.raw.dmjson);
-
-            BufferedReader input = new BufferedReader(new InputStreamReader(is), 1024 * 8);
-            try {
-                String line = null;
-                while ((line = input.readLine()) != null) {
-                    contents.append(line);
-                    contents.append(sep);
-                }
-            } finally {
-                input.close();
-            }
-        } catch (FileNotFoundException ex) {
-            //	Log.e(TAG, "Couldn't find the file " + resourceID  + " " + ex);
-
-        } catch (IOException ex) {
-            //Log.e(TAG, "Error reading file " + resourceID + " " + ex);
-
-        }
-
-
-        String s = contents.toString();
-        try {
-
-            JSONObject jsonObj = new JSONObject(s);
-            JSONArray cards = jsonObj.getJSONArray("cards");
-            int j = 0;//to loop through dbid
-            for (int i = 0; i < cards.length() && j < dbids.length; i++) {
-                JSONObject c = cards.getJSONObject(i);
-                Log.e("JSON", "" + c.getInt("dbid")); //getInt parses for you
-                int id = Integer.parseInt(c.getString("dbid"));
-                if (dbids[j] == id) {
-                    String name = c.getString("name");
-                    String nopun = name.replaceAll("[^\\w\\s]", "");//removes all special characters
-                    String x = nopun.replaceAll(" ", "_").toLowerCase();//replaces space with "_" and converts to lowercase
-                    String y = FilePathManager.getImageDirectory(ctx).getPath();
-                    String z = "/";
-                    String imagepath = y + x;
-                    String type = c.getString("type");
-                    String text = "";
-                    Card temp = new Card(id, name, imagepath, type, text);
-                    j++;
-                    i--; //shadowingthis.
-                    this.cards.add(temp);
-                    Log.e("DeckBuilder", "added: " + id);
-
-                }
-            }
-        } //phone wasn't connected //arraylength0 wtf
-        //wtf. How ere we able to click on an option if the files doesnt exist?why does it show/New when I just made New
-        //passing filename is the problem check
-        catch (Exception e) {//here?
-            e.printStackTrace();
-            Toast.makeText(getApplicationContext(), "Something went wrong", Toast.LENGTH_LONG).show();
-        }
-
-    }
-
-    protected boolean onLongListItemClick(View v, int pos, long id) {
+    protected boolean onLongListItemClick(int pos) {
         //TODO make it display the correct image instead of Doge
-        Card card = (Card) adapter.getItem(pos);
+        Card card = adapter.getItem(pos);
         ImageView image = new ImageView(this);
         // image.setImageResource(R.drawable.images);
-        Bitmap bitmapOrig = (card.getCardBitmap(222, 307));
+        Bitmap bitmapOrig = (card.getCardBitmap(222, 307, this));
         Bitmap bitmapScaled = Bitmap.createScaledBitmap(bitmapOrig, 723, 1000, true);
         image.setImageBitmap(bitmapScaled);
         AlertDialog.Builder builder =
@@ -310,8 +234,8 @@ public class DeckBuilder extends Activity {
     }
 
     public void remove(Card c) {
-        cards.remove(c);
-        Collections.sort(cards, new Comparator<Card>() {
+        mCards.remove(c);
+        Collections.sort(mCards, new Comparator<Card>() {
             @Override
             public int compare(Card card1, Card card2) {
 
@@ -319,11 +243,11 @@ public class DeckBuilder extends Activity {
             }
         });
         adapter = new ArrayAdapter<Card>(this,
-                android.R.layout.simple_list_item_1, cards);
+                android.R.layout.simple_list_item_1, mCards);
         lv.setAdapter(adapter);
         TextView tv = (TextView) findViewById(R.id.size);
-        tv.setText("SIZE OF DECK : " + cards.size());
-        if (cards.size() > 40) tv.setTextColor(Color.RED);
+        tv.setText("SIZE OF DECK : " + mCards.size());
+        if (mCards.size() > 40) tv.setTextColor(Color.RED);
         else tv.setTextColor(Color.WHITE);
     }
 
@@ -342,9 +266,9 @@ public class DeckBuilder extends Activity {
                 ArrayList<Card> rc = (ArrayList<Card>) data.getSerializableExtra("list");
                 //  Card card=(Card)data.getParcelableExtra("card");
                 for (int j = 0; j < rc.size(); j++) {
-                    cards.add(rc.get(j));
+                    mCards.add(rc.get(j));
                 }
-                Collections.sort(cards, new Comparator<Card>() {
+                Collections.sort(mCards, new Comparator<Card>() {
                     @Override
                     public int compare(Card card1, Card card2) {
 
@@ -352,12 +276,12 @@ public class DeckBuilder extends Activity {
                     }
                 });
                 adapter = new ArrayAdapter<Card>(this,
-                        android.R.layout.simple_list_item_1, cards);
+                        android.R.layout.simple_list_item_1, mCards);
                 lv.setAdapter(adapter);
 
                 TextView tv = (TextView) findViewById(R.id.size);
-                tv.setText("SIZE OF DECK:" + cards.size());
-                if (cards.size() > 40) tv.setTextColor(Color.RED);
+                tv.setText("SIZE OF DECK:" + mCards.size());
+                if (mCards.size() > 40) tv.setTextColor(Color.RED);
                 else tv.setTextColor(Color.WHITE);
             }
         } catch (Exception e) {
@@ -367,10 +291,10 @@ public class DeckBuilder extends Activity {
     }
 
     public void save(View v) {//here 1 sec
-        if (!(cards.size() > 40)) {
-            int[] dbids = new int[cards.size()];
+        if (!(mCards.size() > 40)) {
+            int[] dbids = new int[mCards.size()];
             for (int i = 0; i < dbids.length; i++) {
-                dbids[i] = cards.get(i).getDbId();
+                dbids[i] = mCards.get(i).getDbId();
             }
             Intent i = new Intent();
             i.putExtra(KEY_RETURN_DBIDS, dbids);
@@ -380,7 +304,7 @@ public class DeckBuilder extends Activity {
             Toast.makeText(getApplicationContext(), "Save Successful", Toast.LENGTH_SHORT).show();
             //TODO save the deck
         } else
-            Toast.makeText(getApplicationContext(), "Deck has more than 40 cards,can't save", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Deck has more than 40 mCards,can't save", Toast.LENGTH_SHORT).show();
     }
 //try it? yup
 

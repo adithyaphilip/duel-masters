@@ -87,7 +87,7 @@ public class CardOptionChooserActivity extends ListActivity {
             setResult(Activity.RESULT_CANCELED, returnIntent);
             try {
                 ImageView image = new ImageView(this);
-                Bitmap bitmapOrig = (mGameCard.getDbCard().getCardBitmap(222, 307));
+                Bitmap bitmapOrig = (mGameCard.getDbCard().getCardBitmap(222, 307, this));
                 Bitmap bitmapScaled = Bitmap.createScaledBitmap(bitmapOrig, 723, 1000, true);
                 image.setImageBitmap(bitmapScaled);
 

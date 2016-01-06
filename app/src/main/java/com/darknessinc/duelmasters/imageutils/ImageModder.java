@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.BitmapFactory;
@@ -41,19 +42,36 @@ public class ImageModder {
      * @return
      */
     public static Bitmap getMiniBitmap(int reqWidth, int reqHeight, Uri path) {
-        Log.d("ImageModder getMiniBitmap", "width: " + reqWidth);
+        Log.d("ImageModder", "getMiniBitmap width: " + reqWidth);
         BitmapFactory.Options size = getRawSize(path);//gets just dimension of bitmap
         BitmapFactory.Options opt = new BitmapFactory.Options();
         if (reqWidth == 0) {
             reqWidth = Math.round(size.outWidth / (float) size.outHeight * reqHeight);
         } else if (reqHeight == 0) {
             reqHeight = Math.round(size.outHeight / (float) size.outWidth * reqWidth);
-            Log.d("ImageModder getMiniBitmap", "height: " + reqHeight);
+            Log.d("ImageModder", "getMiniBitmap height: " + reqHeight);
         }
         opt.inSampleSize = calcInSampleSize(size, reqWidth, reqHeight);
         Bitmap bm = BitmapFactory.decodeFile(path.getEncodedPath(), opt);//loads a scaled-down version of the bitmap into memory.
         //This was necessary as some phones may not allocate sufficient memory to load the entire image, and loading the full-sized image was not necessary
         return bm;
+    }
+
+    public static Bitmap getMiniBitmap(int reqWidth, int reqHeight, Resources resources, int rId) {
+        Log.d("ImageModder", "getMiniBitmap width: " + reqWidth);
+        BitmapFactory.Options size = getRawSize(resources, rId); //gets just dimension of bitmap
+        if (reqWidth == 0) {
+            reqWidth = Math.round(size.outWidth / (float) size.outHeight * reqHeight);
+        } else if (reqHeight == 0) {
+            reqHeight = Math.round(size.outHeight / (float) size.outWidth * reqWidth);
+            Log.d("ImageModder", "getMiniBitmap height: " + reqHeight);
+        }
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inSampleSize = calcInSampleSize(size, reqWidth, reqHeight);
+        Bitmap bm = BitmapFactory.decodeResource(resources, rId, opt);//loads a scaled-down version of the bitmap into memory.
+        //This was necessary as some phones may not allocate sufficient memory to load the entire image, and loading the full-sized image was not necessary
+        return bm;
+
     }
 
     public static int calcInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {//Raw options using inJustDecodeBounds
@@ -72,7 +90,14 @@ public class ImageModder {
     public static BitmapFactory.Options getRawSize(Uri path) {
         BitmapFactory.Options opt = new BitmapFactory.Options();
         opt.inJustDecodeBounds = true;//does not load image, just loads dimensions
-        Bitmap bm = BitmapFactory.decodeFile(path.getEncodedPath(), opt);//loads just dimensions due to above setting
+        BitmapFactory.decodeFile(path.getEncodedPath(), opt);//loads just dimensions due to above setting
+        return opt;//returns the options which now contains the image dimensions
+    }
+
+    public static BitmapFactory.Options getRawSize(Resources resources, int rId) {
+        BitmapFactory.Options opt = new BitmapFactory.Options();
+        opt.inJustDecodeBounds = true;//does not load image, just loads dimensions
+        BitmapFactory.decodeResource(resources, rId, opt);//loads just dimensions due to above setting
         return opt;//returns the options which now contains the image dimensions
     }
 

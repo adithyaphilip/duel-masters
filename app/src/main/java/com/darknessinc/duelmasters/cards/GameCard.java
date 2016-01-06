@@ -18,7 +18,7 @@ public class GameCard implements Parcelable {
 
     public GameCardView getGameCardView(Context c, int reqWidth, int reqHeight) {
         GameCardView cv = new GameCardView(c, this);
-        Bitmap bm = dbCard.getCardBitmap(reqWidth, reqHeight);
+        Bitmap bm = dbCard.getCardBitmap(reqWidth, reqHeight, c);
         Log.d("GameCard", "getGameCardView width: " + bm.getWidth() + "height: " + bm.getHeight());
         cv.setImageBitmap(bm);
         return cv;

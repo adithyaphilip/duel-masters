@@ -3,7 +3,6 @@ package com.darknessinc.duelmasters.activity;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
@@ -22,7 +21,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.darknessinc.duelmasters.R;
-import com.darknessinc.duelmasters.decks.DeckBuilder;
+import com.darknessinc.duelmasters.decks.DeckBuilderActivity;
 import com.darknessinc.duelmasters.fileutils.FilePathManager;
 //ok. what next? its working?no I wanted to write new comment
 //continue later?
@@ -118,9 +117,9 @@ public class Decks extends Activity {
 
     public void gotodeck(String deckname) {
         Toast.makeText(this, "selected deck: " + deckname, Toast.LENGTH_SHORT).show();
-        Intent i = new Intent(this, DeckBuilder.class);
+        Intent i = new Intent(this, DeckBuilderActivity.class);
 
-        i.putExtra(DeckBuilder.KEY_DECK_NAME, deckname);//try now it is getting name
+        i.putExtra(DeckBuilderActivity.KEY_DECK_NAME, deckname);//try now it is getting name
         startActivityForResult(i, ACTIVITY_DECK_BUILDER);
 
     }
@@ -204,12 +203,12 @@ public class Decks extends Activity {
     }
 
     public void create(View v) { // call that here
-        Intent i = new Intent(this, DeckBuilder.class);
+        Intent i = new Intent(this, DeckBuilderActivity.class);
         EditText myText = (EditText) findViewById(R.id.myText);
         String name = myText.getText().toString();
         myText.setText("");
         if (name.length() > 0) {
-            i.putExtra(DeckBuilder.KEY_DECK_NAME, name);
+            i.putExtra(DeckBuilderActivity.KEY_DECK_NAME, name);
             startActivityForResult(i, ACTIVITY_DECK_BUILDER);
             decks.add(name);
         } else
@@ -239,7 +238,7 @@ public class Decks extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
-                String name = data.getStringExtra(DeckBuilder.KEY_RETURN_DECK_NAME);
+                String name = data.getStringExtra(DeckBuilderActivity.KEY_RETURN_DECK_NAME);
                 writeNewDeck(name, data.getIntArrayExtra("dbids"));
 
             }

@@ -45,7 +45,8 @@ public class GraveZoneContainer extends ZoneContainer {
             mFaceView.setImageResource(R.drawable.dmcardback);
             mFaceView.setOnClickListener(null);
         } else {
-            mFaceView.setImageBitmap(gc.getDbCard().getCardBitmap(mFaceView.getWidth(), 0));
+            mFaceView.setImageBitmap(gc.getDbCard().getCardBitmap(mFaceView.getWidth(), 0,
+                    mFaceView.getContext()));
             setFaceCardListener();
         }
     }
