@@ -33,10 +33,6 @@
             android:windowSoftInputMode="stateHidden">
         </activity>
         <activity
-            android:name=".activity.AdiActivity"
-            android:label="@string/app_name">
-        </activity>
-        <activity
             android:name=".activity.GameActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait">

@@ -25,7 +25,7 @@ public class DatabaseCardRetriever {
     public Card getCard(int dbid) {
         for (Card c : mAllCards) {
             if (c.getDbId() == dbid)
-                return c;
+                return c.clone();
         }
         return null;
     }

@@ -21,9 +21,4 @@ public class MainActivity extends Activity {
         Intent i = new Intent(this, PlayActivity.class);
         startActivity(i);
     }
-
-    public void adiButtonClicked(View v) {
-        Intent i = new Intent(this, AdiActivity.class);
-        startActivity(i);
-    }
 }

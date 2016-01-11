@@ -7,14 +7,12 @@ import java.util.Scanner;
 import java.util.StringTokenizer;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -23,11 +21,10 @@ import com.darknessinc.duelmasters.remote.ConnectActivity;
 import com.darknessinc.duelmasters.cards.DatabaseCardRetriever;
 import com.darknessinc.duelmasters.cards.GameCard;
 import com.darknessinc.duelmasters.fileutils.FilePathManager;
-import com.darknessinc.duelmasters.player.Player;
 
 public class DeckChooser extends Activity {
     ListView lv;
-    ArrayList<String> decks = new ArrayList<String>();
+    ArrayList<String> decks = new ArrayList<>();
     ArrayAdapter<String> adapter;
     DatabaseCardRetriever mDBCR;
 
@@ -39,8 +36,7 @@ public class DeckChooser extends Activity {
         mDBCR = new DatabaseCardRetriever(this);
         decks = getDeckNames();
         lv = (ListView) findViewById(R.id.list_view);
-        adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_list_item_1, decks);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, decks);
         lv.setAdapter(adapter);
 
         lv.setOnItemClickListener(new OnItemClickListener() {
@@ -85,15 +81,15 @@ public class DeckChooser extends Activity {
             sc.close();
             String str = sb.toString();
             StringTokenizer st = new StringTokenizer(str, ",");
-            ArrayList<Integer> dbid = new ArrayList<Integer>();
-            int i = 0;
+            ArrayList<Integer> dbid = new ArrayList<>();
+            int i;
             //Toast.makeText(getApplicationContext(), "WORKS 1", Toast.LENGTH_LONG).show();
 
 
             while (st.hasMoreTokens()) {
                 // Toast.makeText(getApplicationContext(), "WORKS 2", Toast.LENGTH_LONG).show();
 
-                int m = (Integer.valueOf(st.nextToken())).intValue();
+                int m = Integer.valueOf(st.nextToken());
                 //Toast.makeText(getApplicationContext(), "WORKS 3", Toast.LENGTH_LONG).show();
                 dbid.add(m);
 
@@ -101,7 +97,7 @@ public class DeckChooser extends Activity {
             }
             int[] temp = new int[40];
             for (i = 0; i < dbid.size(); i++) {
-                temp[i] = (int) dbid.get(i);
+                temp[i] = dbid.get(i);
 
             }
 
@@ -114,7 +110,7 @@ public class DeckChooser extends Activity {
     }
 
     public ArrayList<String> getDeckNames() {
-        ArrayList<String> al = new ArrayList<String>();
+        ArrayList<String> al = new ArrayList<>();
         for (File f : getDeckFiles()) {
             //cx		Toast.makeText(this, f.getName(),Toast.LENGTH_SHORT).show();//correct it no
 
@@ -165,7 +161,7 @@ public class DeckChooser extends Activity {
             sc.close();
             String str = sb.toString();
             StringTokenizer st = new StringTokenizer(str, ",");
-            ArrayList<Integer> dbid = new ArrayList<Integer>();
+            ArrayList<Integer> dbid = new ArrayList<>();
             int i = 0;
             //Toast.makeText(getApplicationContext(), "WORKS 1", Toast.LENGTH_LONG).show();
 
@@ -173,9 +169,9 @@ public class DeckChooser extends Activity {
             while (st.hasMoreTokens()) {
                 //Toast.makeText(getApplicationContext(), "WORKS 2", Toast.LENGTH_LONG).show();
                  /*Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show();
-				 Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show();
+                 Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show();
 				 Toast.makeText(getApplicationContext(), st.nextToken(), Toast.LENGTH_LONG).show(); */
-                int m = (Integer.valueOf(st.nextToken())).intValue();
+                int m = Integer.valueOf(st.nextToken());
                 //Toast.makeText(getApplicationContext(), "WORKS 3", Toast.LENGTH_LONG).show();
                 dbid.add(m);
 
@@ -194,31 +190,20 @@ public class DeckChooser extends Activity {
             e.printStackTrace();
 
         }
-        if (temp == null)
-            return;
         //Toast.makeText(this, "arraylength"+temp.length, Toast.LENGTH_SHORT).show();
-        gamecardmaker(getApplicationContext(), temp);                                          //correct? yea but i dunno about the cast to String in the previous part. You know it works right?nope. show?as in? run? no the previous activity
+        gamecardmaker(temp);                                          //correct? yea but i dunno about the cast to String in the previous part. You know it works right?nope. show?as in? run? no the previous activity
     }
 
-    void gamecardmaker(Context ctx, int[] dbids) {
-        final ImageView iv = new ImageView(this);
-        File f = new File(FilePathManager.getImageDirectory(this).getPath() + "zorvaz_the_bonecrusher");
-        if (f.exists()) {
-            ArrayList<GameCard> gcs = new ArrayList<GameCard>();
-            int cardCtr = 1;
-            for (int i = 0; i < dbids.length; i++) {
-                GameCard gc11 = new GameCard(cardCtr++ * 10 + 2, mDBCR.getCard(dbids[i]));
-                gcs.add(gc11);
-            }
-            Player p1 = new Player(2, "kai", gcs);
-            Intent i = new Intent(this, ConnectActivity.class);
-            i.putExtra(ConnectActivity.KEY_OWN_CARDS, gcs);
-            startActivity(i);
-        } else {
-            Toast.makeText(getApplicationContext(), "CAN'T", Toast.LENGTH_LONG).show();
+    void gamecardmaker(int[] dbids) {
+        ArrayList<GameCard> gcs = new ArrayList<>();
+        int cardCtr = 1;
+        for (int i = 0; i < dbids.length; i++) {
+            GameCard gc11 = new GameCard(cardCtr++ * 10 + 2, mDBCR.getCard(dbids[i]));
+            gcs.add(gc11);
         }
-
-
+        Intent i = new Intent(this, ConnectActivity.class);
+        i.putExtra(ConnectActivity.KEY_OWN_CARDS, gcs);
+        startActivity(i);
     }
 
 
